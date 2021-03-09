@@ -1,0 +1,289 @@
+{% extends "layout.html" %}
+
+{% block title %}
+sign up/login
+{% endblock %}
+
+{% block headline %}
+{{title}}
+{% endblock %}
+
+{% block content %}
+<!-- Vue.js cntainer コンテナ -->
+<div id = "app" class="m-3">
+    <form_board/>
+</div>
+<!--Jibjaで処理されないために入力(python側で処理されずそのまま出力)-->
+<!--tamplateはv-for,v-ifと共にしか使用できない-->
+<!-- ********************** -->
+<!-- * Component Template * -->
+<!-- ********************** -->
+
+{% raw %}
+<script type="text/x-template" id="form_board-template">
+    <div>
+        <div class='btn-toolbar' role="toolbar">
+            <div class="btn-group ml-auto">
+                <div class="mr-3">
+            <a href="javascript:void(0)"
+                v-on:click="in_in_check">{{in_in}}</a>
+                </div>
+            <a href="javascript:void(0)"
+                v-on:click="in_out_check">{{in_out}}</a>
+            </div>
+        </div>
+
+        <div class="alert alert-success p-1">
+            <h5>{{alert_msg}}{{login_id}}</h5>
+        </div>
+
+        <!-- Sign up Dialog -->
+        <div class="modal fade" id="signup">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">
+                                {{signup_msg}}
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="id">id</label>
+                                <input type="text" class="form-control"
+                                    id="id" name="id" v-model="form_id">
+                                <small class="form-text text-muted">
+                                    ※IDを入力
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="pass">password</label>
+                                <input type="password" class="form-control"
+                                    id="pass" name="pass" v-model="form_pass">
+                                <small class="form-text text-muted">
+                                    ※パスワードを入力
+                                </small>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col">
+                                  <label for="sel1">性別</label>
+                                  <select class="form-control" id="sel1" name="sel1" v-model="form_sel1">
+                                    <option></option>
+                                    <option>男性</option>
+                                    <option>女性</option>
+                                  </select>
+                                </div>
+                                <div class="form-group col">
+                                  <label for="sel2">お住まいの都道府県</label>
+                                  <select class="form-control" id="sel2" name="sel2" v-model="form_sel2">
+                                    <option></option>
+                                    <option>北海道</option><option>青森</option><option>岩手</option><option>宮城</option><option>秋田</option><option>山形</option>
+                                    <option>福島</option><option>茨城</option><option>栃木</option><option>群馬</option><option>埼玉</option><option>千葉</option>
+                                    <option>東京</option><option>神奈川</option><option>新潟</option><option>富山</option><option>石川</option><option>福井</option>
+                                    <option>山梨</option><option>長野</option><option>岐阜</option><option>静岡</option><option>愛知</option><option>三重</option>
+                                    <option>滋賀</option><option>京都</option><option>大阪</option><option>兵庫</option><option>奈良</option><option>和歌山</option>
+                                    <option>鳥取</option><option>島根</option><option>岡山</option><option>広島</option><option>山口</option><option>徳島</option>
+                                    <option>香川</option><option>愛媛</option><option>高知</option><option>福岡</option><option>佐賀</option><option>長崎</option>
+                                    <option>熊本</option><option>大分</option><option>宮崎</option><option>鹿児島</option><option>沖縄</option>
+                                  </select>
+                                </div>
+                              </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" v-on:click="signup">sign up</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Dialog -->
+        <div class="modal fade" id="login">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">
+                                {{login_msg}}
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="id">id</label>
+                                <input type="text" class="form-control"
+                                    id="id" name="id" v-model="form_id">
+                                <small class="form-text text-muted">
+                                    ※IDを入力（未登録の場合は新たに登録したいIDを記入）
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label for="pass">password</label>
+                                <input type="password" class="form-control"
+                                    id="pass" name="pass" v-model="form_pass">
+                                <small class="form-text text-muted">
+                                    ※パスワードを入力（未登録の場合は新たに登録したいパスワードを記入）
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-primary" v-on:click="login">login</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+{% endraw %}
+
+<!-- ******************** -->
+<!-- * Component Script * -->
+<!-- ******************** -->
+<script>
+    // start Vue
+    //作成に必要な情報をオブジェクトにまとめる
+    Vue.component('form_board', {
+    template: '#form_board-template',
+    data: function(){
+        return {
+            in_out:'login',
+            in_in: 'sign up',
+            login_flg:false, login_id:'',
+            signup_flg:false, signup_id:'',
+            form_id:'', form_pass:'', form_sel1:'', form_sel2:'',
+            login_msg:'Login form:',
+            signup_msg:'Sign up form:',
+            alert_msg:'%ログインしてください。',
+          }
+    },
+    methods:{
+        // check login/logout
+        in_out_check: function(e) {
+            if (this.login_flg) {
+                this.logout();
+            } else {
+                this.show_login();
+            }
+        },
+        in_in_check: function(e) {
+            if (this.signup_flg) {
+                this.logout();
+            } else {
+                this.show_signup();
+            }
+        },
+        //show login dialog
+        show_login: function() {
+            this.form_id = ''
+            this.form_pass = ''
+            this.login_msg = 'Login Form:';
+            $('#login').modal('show')
+        },
+        show_signup: function() {
+            this.form_id = ''
+            this.form_pass = ''
+            this.form_sel1 = ''
+            this.form_sel2 = ''
+            this.signup_msg = 'Sign up Form:';
+            $('#signup').modal('show')
+        },
+        // access server and logined.
+        login: function(e) {
+            let formData = new FormData();
+            let self = this;
+            formData.append("id", this.form_id);
+            formData.append("pass", this.form_pass);
+            $.ajax({
+                type: 'POST',
+                url: '/login',
+                data: formData,
+                processData: false,
+                contentType: false,
+
+                success: function(data) {
+                    if (data == 'True'){
+                        self.in_out = 'logout';
+                        self.in_in = ""
+                        self.login_flg = true;
+                        self.login_id = 'ID: ' + self.form_id;
+                        self.alert_msg = '※ログインしました！';
+                        self.form_id = '';
+                        self.form_pass = '';
+                        $('#login').modal('hide');   
+                    } else {
+                        self.login_msg = 'パスワードが違います。';
+                        self.pass = '';
+                    }
+                },
+                error: function(request, status, err) {
+                    self.login_msg = '%問題が発生しました。';
+                }
+            });
+        },
+        getdata: function() {
+            let self = this;
+            $.get("/ajax", function(data) {
+                self.data = eval(data).reverse();
+            });
+        },
+        signup: function(e) {
+            let formData = new FormData();
+            let self = this;
+            formData.append("id", this.form_id);
+            formData.append("pass", this.form_pass);
+            formData.append("sel1", this.form_sel1);
+            formData.append("sel2", this.form_sel2);
+            $.ajax({
+                type: 'POST',
+                url: '/signup',
+                data: formData,
+                processData: false,
+                contentType: false,
+
+                success: function(data) {
+                    if (data == 'True'){
+                        self.in_out = 'logout';
+                        self.in_in = ""
+                        self.login_flg = true;
+                        self.login_id = 'ID: ' + self.form_id;
+                        self.alert_msg = '※ログインしました！';
+                        self.form_id = '';
+                        self.form_pass = '';
+                        self.form_sel1 ='';
+                        self.form_sel2 ='';
+                        $('#signup').modal('hide');
+                        self.getdata();  
+                    } else {
+                        self.signup_msg = '未入力の項目があります';
+                        self.pass = '';
+                    }
+                },
+                error: function(request, status, err) {
+                    self.signup_msg = '%問題が発生しました。';
+                }
+            });
+        },
+        created: function() {
+            this.getdata();
+        },
+        //logout
+        logout: function(){
+            console.log('logout');
+            this.in_out = 'login';
+            this.in_in = 'sign up';
+            this.login_flg = false;
+            this.login_id = '';
+            this.alert_msg = '※ログアウトしました！';
+        },
+    },
+});
+new Vue({
+    //el 必ず必要、組み込むタグの指定,id=app
+    el: "#app",
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+copyright 2021
+{% endblock %}
